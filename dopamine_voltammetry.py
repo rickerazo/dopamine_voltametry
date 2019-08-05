@@ -42,6 +42,9 @@ def timebins(t_ini,t_end):
 
 def peak_analysis(qk1,tm1,R1):
 	peak_eval_threshold = 0.1	#threshold for discriminating begin and end of peak
+	out1=[]
+	out2=[]
+	out3=[]
 	for i in range(0,len(qk1)):
 		peak = qk1[i]
 		Ipeak = R1[peak]
@@ -63,16 +66,12 @@ def peak_analysis(qk1,tm1,R1):
 		tbin_after = tm1[peak:peak+ev_tol]
 		counter=0
 
-		print(Ipeak)
-		print(peak-ev_tol)
-		print(R1[peak-ev_tol:peak])
+		# print(Ipeak)
+		# print(peak-ev_tol)
+		# print(R1[peak-ev_tol:peak])
 		while counter < 10:
 			if Ipeak-Ibin_before[counter] > peak_eval_threshold:
-				# start_peak = Ibin_before[counter]
 				start_peak = tbin_before[counter]
-				# print(start_peak)
-				# mean_I_before = np.mean(tbin_before[0:])
-				# print(counter)
 				counter=10
 			counter=counter+1
 
@@ -80,32 +79,34 @@ def peak_analysis(qk1,tm1,R1):
 
 		while counter < 10:
 			if Ipeak-Ibin_after[counter] > peak_eval_threshold:
-				# end_peak = Ibin_after[counter]
 				end_peak = tbin_after[counter]
-				# print(end_peak)
 				counter=10
 			counter=counter+1
 
 		peak_duration = end_peak-start_peak
-		# print(peak_duration)
 
 		mean1 = R1[peak]
 
-			#area under curve:
-		#triangle formula, when the spike has a triangular shape
 		area_1= peak_duration*peak_amplitude/2
-		print('timestamp='+str(tm1[peak]))
-		print('Amplitude '+str(peak_amplitude))
-		print('Duration '+ str(peak_duration)+'\n')
-	return tm1[peak],peak_amplitude,peak_duration
+		print('timestamp = '+str(tm1[peak]))
+		print('Amplitude = '+str(peak_amplitude))
+		print('Duration = '+ str(peak_duration)+'\n')
+		
+		out1.append(tm1[peak])
+		out2.append(peak_amplitude)
+		out3.append(peak_duration)
+		# writer = pd.ExcelWriter('Analyze_peaks.xls')
+		# output1 = {'timestamp':[str(tm1[peak])],'amplitude':[str(peak_amplitude)],'duration':[str(peak_duration)]}
+		# output2 = pd.DataFrame(output1,columns=['timestamp','amplitude','duration'])
+		# output2.to_excel(writer,sheet_name=str(i))
+
+	return out1,out2,out3
 
 def averages(I,t_ini,t_end):
 	ave1 = np.mean(I[t_ini:t_end])
 	return ave1
 
 def timelist_(tm2,lb1):
-	conter = 0
-	LB = []
 	nonsoc = []
 	soc = []
 	agg = []
@@ -132,8 +133,6 @@ def timelist_(tm2,lb1):
 			t2 = int(tm2[i+1])-1
 			lb10 = 'Aggression'
 			agg.append([t1,t2,lb10])
-
-		LB.append(lb0)
 	return nonsoc,soc,agg
 
 def timetags(x):
@@ -156,19 +155,30 @@ annotations = '19-107_run2B_annotations.xls'
 file_name = '19-107_run2B_export.xls' # path to file + file name
 sheet =  0# sheet name or sheet number or list of sheet numbers and names
 # data_cols = "C:E"#columns from excel spreadsheet that will be used.
-ev_tol = 20 # timebin length for evaluation 
+ev_tol = 20 # timebin length for evaluation : unit seconds -> defines time before any given peak to evaluate and compute a running baseline.
 
 #import raw data: -> parameter usecol'D' should be 
 time = np.array(pd.read_excel(io=file_name, sheet_name=sheet,usecols="D"))
 time = time.flatten()
-temp1 = pd.read_excel(io=file_name, sheet_name=sheet,usecols="E")
-temp1 = temp1+1-1
+temp1 = pd.read_excel(io=file_name, sheet_name=sheet,usecols="E",skiprows=[0,1,2,3,4,5,6,7])
 I =temp1.values
+#Mac compatibility
+# temp1 = temp1[6:-1]
+# I = I[10:-1]
+# time = time[10:-1]
+
 # import annotations
 tm2 = pd.read_excel(io=annotations, sheet_name=sheet,usecols="D")
+#Mac
+# tm2 = tm2[6:len(tm2)]
+#
 tm2 = tm2.values
+# tm2.flatten()
 lb1 = pd.read_excel(io=annotations, sheet_name=sheet,usecols="F",converters={'Annotation':str})
+#Mac 
+# lb1 = lb1[6:len(lb1)]
 lb2 = lb1.values
+
 # Normalization technique: substract a smoothed curve of the data as a running mean from the raw signal 
 I_norm = I.flatten() - savgol_filter(I.flatten(),51,1) # normalized data -> raw data - filtered data
 # peak threshold algorithm 
@@ -197,15 +207,23 @@ if Analyze_peaks == True:
 	plt.plot(tm1[qk1],R1[qk1],'*',markersize=mk,linewidth=lw,color='red')
 	
 	timestamp,amplitude,duration = peak_analysis(qk1,tm1,R1)
+
+	output1 = {'col1':[timestamp],'col2':[amplitude],'col3':[duration]}
+	output2 = pd.DataFrame(data=output1)#,columns=['timestamp','amplitude','duration'])
+	output2.to_excel('Analyze_peaks.xls')
+
 	plt.savefig('peaks')
 
 ### tonic
+outfile_t = open('tonic.txt','w')
+outfile_t.write('timestamp (ini, end)'+'	'+'y1'+'\n')
 Analyze_tonic = True
 if Analyze_tonic == True:
 	tm1,R1,N1 = timebins(t1,t2)
 	n,s,a=timelist_(tm2,lb2)
 
 	print('Non Social')
+	outfile_t.write('Non Social'+'\n')
 	timebins_list = timetags(n)
 
 	p1,p2= np.shape(timebins_list)
@@ -213,11 +231,15 @@ if Analyze_tonic == True:
 		ti = timebins_list[i]
 		av1 = averages(I,ti[0],ti[1])
 		plt.plot([ti[0],ti[1]],[av1,av1],linewidth=lw*2,color='k')#,label='behavior_tag_x')
-		print(av1)
+		print(ti[0],ti[1],av1)
+		outfile_t.write(str(ti[0])+'	')
+		outfile_t.write(str(ti[1])+'	')
+		outfile_t.write(str(av1)+'\n')
 		plt.axis([t3,t4,-1,6.2]) 
 		plt.savefig('tonic')
 
 	print('Social Investigation')
+	outfile_t.write('Social'+'\n')
 	timebins_list = timetags(s)
 
 	p1,p2= np.shape(timebins_list)
@@ -225,12 +247,16 @@ if Analyze_tonic == True:
 		ti = timebins_list[i]
 		av1 = averages(I,ti[0],ti[1])
 		plt.plot([ti[0],ti[1]],[av1,av1],linewidth=lw*2,color='k')#,label='behavior_tag_x')
-		print(av1)
+		print(ti[0],ti[1],av1)
+		outfile_t.write(str(ti[0])+'	')
+		outfile_t.write(str(ti[1])+'	')
+		outfile_t.write(str(av1)+'\n')		
 		plt.axis([t3,t4,-1,6.2]) 
 		plt.savefig('tonic')
 
 
 	print('Aggression')
+	outfile_t.write('Aggression'+'\n')
 	timebins_list = timetags(a)
 
 	p1,p2= np.shape(timebins_list)
@@ -238,9 +264,13 @@ if Analyze_tonic == True:
 		ti = timebins_list[i]
 		av1 = averages(I,ti[0],ti[1])
 		plt.plot([ti[0],ti[1]],[av1,av1],linewidth=lw*2,color='k')#,label='behavior_tag_x')
-		print(av1)
+		print(ti[0],ti[1],av1)
+		outfile_t.write(str(ti[0])+'	')
+		outfile_t.write(str(ti[1])+'	')
+		outfile_t.write(str(av1)+'\n')		
 		plt.axis([t3,t4,-1,6.2]) 
 		plt.savefig('tonic')
+	outfile_t.close()
 
 plt.axis([t3,t4,-1,6.2]) 
 plt.legend()
@@ -248,3 +278,4 @@ plt.ion()
 plt.show()
 
 ########################################## Save output to excel file
+
