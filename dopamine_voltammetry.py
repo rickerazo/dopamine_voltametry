@@ -106,7 +106,7 @@ def averages(I,t_ini,t_end):
 	ave1 = np.mean(I[t_ini:t_end])
 	return ave1
 
-def timelist_(tm2,lb1):
+def timelist_(tm2,lb1,t_ini,t_end):
 	nonsoc = []
 	soc = []
 	agg = []
@@ -114,25 +114,25 @@ def timelist_(tm2,lb1):
 	for i in range(0,len(lb1)):
 		tm3 = int(tm2[i])
 		lb0 = str(lb1[i])
-		counter = 0
-		if lb0=="['non social']":
-			t1 = tm3
-			t2 = int(tm2[i+1])-1
-			lb10 = 'Non Social'
-			nonsoc.append([t1,t2,lb10])
-		
-		if lb0=="['social investigation']":
-			t1 = tm3
-			t2 = int(tm2[i+1])-1
-			lb10 = 'Social Investigation'
-			soc.append([t1,t2,lb10])
-			# print(t1,t2)
+		if tm3<=t_end and tm3>=t_ini:
+			if lb0=="['non social']":
+				t1 = tm3
+				t2 = int(tm2[i+1])-1
+				lb10 = 'Non Social'
+				nonsoc.append([t1,t2,lb10])
+			
+			if lb0=="['social investigation']":
+				t1 = tm3
+				t2 = int(tm2[i+1])-1
+				lb10 = 'Social Investigation'
+				soc.append([t1,t2,lb10])
+				# print(t1,t2)
 
-		if lb0== "['aggression']":
-			t1 = tm3
-			t2 = int(tm2[i+1])-1
-			lb10 = 'Aggression'
-			agg.append([t1,t2,lb10])
+			if lb0== "['aggression']":
+				t1 = tm3
+				t2 = int(tm2[i+1])-1
+				lb10 = 'Aggression'
+				agg.append([t1,t2,lb10])
 	return nonsoc,soc,agg
 
 def timetags(x):
@@ -168,13 +168,13 @@ I =temp1.values
 # time = time[10:-1]
 
 # import annotations
-tm2 = pd.read_excel(io=annotations, sheet_name=sheet,usecols="D")
+tm2 = pd.read_excel(io=annotations, sheet_name=sheet,usecols="D",skiprows=[0,1,2,3,4,5,6,7])
 #Mac
 # tm2 = tm2[6:len(tm2)]
 #
 tm2 = tm2.values
 # tm2.flatten()
-lb1 = pd.read_excel(io=annotations, sheet_name=sheet,usecols="F",converters={'Annotation':str})
+lb1 = pd.read_excel(io=annotations, sheet_name=sheet,usecols="F",converters={'Annotation':str},skiprows=[0,1,2,3,4,5,6,7])
 #Mac 
 # lb1 = lb1[6:len(lb1)]
 lb2 = lb1.values
@@ -198,7 +198,11 @@ tm1,R1,N1 = timebins(t3,t4)
 R1=R1.flatten()
 
 ## peaks
-Analyze_peaks = False
+outfile_p = open('peaks.txt','w')
+outfile_p.write('t stamp(s)'+'	'+'amplitude(nA)'+'	'+'duration(s)'+'\n')
+
+Analyze_peaks = True
+
 if Analyze_peaks == True:
 	
 	qk1,p0 = find_peaks(R1,prominence=peak_threshold)
@@ -208,19 +212,22 @@ if Analyze_peaks == True:
 	
 	timestamp,amplitude,duration = peak_analysis(qk1,tm1,R1)
 
-	output1 = {'col1':[timestamp],'col2':[amplitude],'col3':[duration]}
-	output2 = pd.DataFrame(data=output1)#,columns=['timestamp','amplitude','duration'])
-	output2.to_excel('Analyze_peaks.xls')
-
+	for i in range(0,len(timestamp)):
+		outfile_p.write(str(timestamp[i])+'	'+str(amplitude[i])+'	'+str(duration[i])+'\n')
+	outfile_p.close()
+	plt.axis([t3,t4,-1,10])
+	plt.legend()
 	plt.savefig('peaks')
 
 ### tonic
 outfile_t = open('tonic.txt','w')
 outfile_t.write('timestamp (ini, end)'+'	'+'y1'+'\n')
+
 Analyze_tonic = True
 if Analyze_tonic == True:
 	tm1,R1,N1 = timebins(t1,t2)
-	n,s,a=timelist_(tm2,lb2)
+
+	n,s,a=timelist_(tm2,lb2,t1,t2)
 
 	print('Non Social')
 	outfile_t.write('Non Social'+'\n')
@@ -235,8 +242,6 @@ if Analyze_tonic == True:
 		outfile_t.write(str(ti[0])+'	')
 		outfile_t.write(str(ti[1])+'	')
 		outfile_t.write(str(av1)+'\n')
-		plt.axis([t3,t4,-1,6.2]) 
-		plt.savefig('tonic')
 
 	print('Social Investigation')
 	outfile_t.write('Social'+'\n')
@@ -251,9 +256,6 @@ if Analyze_tonic == True:
 		outfile_t.write(str(ti[0])+'	')
 		outfile_t.write(str(ti[1])+'	')
 		outfile_t.write(str(av1)+'\n')		
-		plt.axis([t3,t4,-1,6.2]) 
-		plt.savefig('tonic')
-
 
 	print('Aggression')
 	outfile_t.write('Aggression'+'\n')
@@ -268,11 +270,11 @@ if Analyze_tonic == True:
 		outfile_t.write(str(ti[0])+'	')
 		outfile_t.write(str(ti[1])+'	')
 		outfile_t.write(str(av1)+'\n')		
-		plt.axis([t3,t4,-1,6.2]) 
-		plt.savefig('tonic')
+	plt.axis([t1,t2,-1,6.2]) 
+	plt.legend()
+	plt.savefig('tonic')
 	outfile_t.close()
 
-plt.axis([t3,t4,-1,6.2]) 
 plt.legend()
 plt.ion()
 plt.show()
