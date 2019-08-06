@@ -16,4 +16,4 @@ Summer 2019
 ## data input format requirements:
 excel files columns should not have blank spaces where there isn't data. If any blanks exist in raw data (nA), fill the blanks with a reasonable aproximation based on the previous and/or subsequent timepoints. There should be a behavioral tag for each timepoint of interest that will be analyzed in a separate spreadsheet.
 
-Code tested and compatible across OSX and Linux Anaconda distributions. OK!
+### Code tested and compatible across OSX and Linux Anaconda distributions. OK!
