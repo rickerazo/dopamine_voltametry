@@ -3,8 +3,8 @@
 # Authors:
 ### Ricardo Erazo
 ### Johnatan Borland
-## Georgia State University
-## Neuroscience Institute
+#### Georgia State University
+#### Neuroscience Institute
 Open Source Code
 Summer 2019
 ## Intro:
