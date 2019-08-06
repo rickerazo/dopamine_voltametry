@@ -205,7 +205,7 @@ if Analyze_peaks == True:
 	outfile_p.close()
 	plt.axis([t3,t4,-1,10])
 	plt.legend()
-	plt.savefig('peaks')
+	plt.savefig(fileID+'_peaks')
 
 ### tonic
 outfile_t = open(fileID+'_tonic.txt','w')
@@ -260,7 +260,7 @@ if Analyze_tonic == True:
 		outfile_t.write(str(av1)+'\n')		
 	plt.axis([t1,t2,-1,6.2]) 
 	plt.legend()
-	plt.savefig('tonic')
+	plt.savefig(fileID+'_tonic')
 	outfile_t.close()
 
 plt.legend()
