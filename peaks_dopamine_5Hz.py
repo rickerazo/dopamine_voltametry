@@ -102,7 +102,17 @@ def peak_analysis(qk1,tm1,R1,data_acquisition_rate,timebin_baseline):
 	return out1,out2,out3
 
 def averages(I,t_ini,t_end):
-	ave1 = np.mean(I[t_ini:t_end])
+	guia1 = np.round(t_ini,1)
+	guia2 = np.round(t_end,1)
+	p1 = np.nonzero(tm1>=guia1)
+	p2 = p1[0]
+	guia10 = p2[0]
+
+	p3 = np.nonzero(tm1<=guia2)
+	p4 = p3[0]
+	guia20 = p4[-1]
+
+	ave1 = np.mean(I[guia10:guia20])
 	return ave1
 
 def timelist_(tm2,lb1,t_ini,t_end,timestep):
