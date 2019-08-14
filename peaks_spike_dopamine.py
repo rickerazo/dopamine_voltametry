@@ -226,7 +226,7 @@ if Analyze_peaks == True:
 	plt.savefig('peaks')
 # def averages(tm1,I,t_ini,t_end):
 ### tonic
-Analyze_tonic = True
+Analyze_tonic = False
 if Analyze_tonic == True:
 	outfile_t = open(fileID+'_tonic.txt','w')
 	outfile_t.write('timestamp (ini, end)'+'	'+'y1'+'\n')

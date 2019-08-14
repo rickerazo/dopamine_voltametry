@@ -205,7 +205,7 @@ R1=R1.flatten()
 N1=N1.flatten()
 peak_threshold = np.sqrt(np.mean(np.square(N1))) * 1
 ## peaks
-Analyze_peaks = True
+Analyze_peaks = False
 
 if Analyze_peaks == True:
 	outfile_p = open(fileID+'_peaks.txt','w')
