@@ -1,5 +1,5 @@
 # dopamine_voltammetry.py
-### Code developed in Python 3.6.8 to analyze voltametry data 
+### Code developed in Python 3.6.8 to analyze voltametry data of hamster electrophysiology
 # Authors:
 ### Ricardo Erazo
 ### Johnatan Borland
