@@ -216,7 +216,7 @@ R1=R1.flatten()
 N1=N1.flatten()
 peak_threshold = np.sqrt(np.mean(np.square(N1))) * 0.4
 ## peaks
-Analyze_peaks = False
+Analyze_peaks = True
 
 if Analyze_peaks == True:
 	outfile_p = open(fileID+'_peaks.txt','w')
@@ -244,7 +244,7 @@ if Analyze_peaks == True:
 
 
 ### tonic
-Analyze_tonic = True
+Analyze_tonic = False
 
 aggregate_nonsocial=[]
 aggregate_social=[]
